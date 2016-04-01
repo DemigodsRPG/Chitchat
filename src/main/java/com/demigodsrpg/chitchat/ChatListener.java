@@ -21,14 +21,14 @@ public class ChatListener implements Listener {
 
     // -- BUKKIT CHAT LISTENER -- //
 
-    @EventHandler(priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onChat(AsyncPlayerChatEvent chat) {
         if (INST.getMuteMap().keySet().contains(chat.getPlayer().getUniqueId().toString())) {
             chat.setCancelled(true);
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onFinalChat(AsyncPlayerChatEvent chat) {
         Chitchat.sendMessage(INST.FORMAT.getFormattedMessage(chat.getPlayer(), ChatScope.LOCAL, chat.getMessage()),
                 chat.getRecipients());
@@ -40,7 +40,7 @@ public class ChatListener implements Listener {
         chat.getRecipients().clear();
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPreprocessCommand(PlayerCommandPreprocessEvent command) {
         Player player = command.getPlayer();
         String[] commandMsg = command.getMessage().split("\\s+");
