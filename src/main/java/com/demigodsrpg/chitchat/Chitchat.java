@@ -65,7 +65,6 @@ public class Chitchat extends JavaPlugin {
     TitleUtil TITLE;
     LibraryHandler LIBRARIES;
 
-
     // -- IMPORTANT LISTS -- //
     ConcurrentMap<String, Double> MUTE_MAP;
     ConcurrentMap<String, String> REPLY_MAP;
@@ -121,7 +120,7 @@ public class Chitchat extends JavaPlugin {
             FORMAT.add(new WorldPlayerTag())
                     .add(new DefaultPlayerTag("example-prefix", "chitchat.admin", admin, 3))
                     .add(new SpecificPlayerTag("hqm", "HmmmQuestionMark", dev, 3))
-                    .add(new SpecificPlayerTag("hqm2", "HandyQuestMarker", dev, 3))
+                    .add(new SpecificPlayerTag("hqm2", "HmmmQM", dev, 3))
                     .add(new SpecificPlayerTag("hqm3", "HQM", dev, 3))
                     .add(new NameTag());
         }

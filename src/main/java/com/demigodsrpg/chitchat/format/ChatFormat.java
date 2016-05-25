@@ -29,6 +29,7 @@ import com.demigodsrpg.chitchat.tag.PlayerTag;
 import com.google.common.collect.ImmutableList;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -145,6 +146,18 @@ public class ChatFormat {
             ret.addExtra(component);
         }
         return ret;
+    }
+
+    /**
+     * Get the final formatted message (serialized as json) for this chat format.
+     *
+     * @param player  The player chatting.
+     * @param scope   The scope for the message to be presented in.
+     * @param message The message being sent.
+     * @return The serialized message.
+     */
+    public String getSerializedMessage(Player player, ChatScope scope, String message) {
+        return ComponentSerializer.toString(getFormattedMessage(player, scope, message));
     }
 
     /**
