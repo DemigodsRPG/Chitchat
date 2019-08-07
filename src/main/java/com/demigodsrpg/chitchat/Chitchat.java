@@ -24,31 +24,18 @@
  */
 package com.demigodsrpg.chitchat;
 
-import com.demigodsrpg.chitchat.command.CCMsgCommand;
-import com.demigodsrpg.chitchat.command.CCMuteCommand;
-import com.demigodsrpg.chitchat.command.CCMuteListCommand;
-import com.demigodsrpg.chitchat.command.CCReloadCommand;
+import com.demigodsrpg.chitchat.command.*;
 import com.demigodsrpg.chitchat.format.ChatFormat;
-import com.demigodsrpg.chitchat.tag.DefaultPlayerTag;
-import com.demigodsrpg.chitchat.tag.NameTag;
-import com.demigodsrpg.chitchat.tag.SpecificPlayerTag;
-import com.demigodsrpg.chitchat.tag.WorldPlayerTag;
-import com.demigodsrpg.chitchat.util.JsonFileUtil;
-import com.demigodsrpg.chitchat.util.LibraryHandler;
-import com.demigodsrpg.chitchat.util.TitleUtil;
+import com.demigodsrpg.chitchat.tag.*;
+import com.demigodsrpg.chitchat.util.*;
 import com.google.common.collect.ImmutableList;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.*;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -157,7 +144,7 @@ public class Chitchat extends JavaPlugin {
             LIBRARIES.addMavenLibrary(LibraryHandler.MAVEN_CENTRAL, Depends.COM_FASTERXML_JACKSON_CORE,
                     Depends.JACKSON_CORE, Depends.JACKSON_VER);
             LIBRARIES.addMavenLibrary(LibraryHandler.MAVEN_CENTRAL, Depends.COM_FASTERXML_JACKSON_CORE,
-                    Depends.JACKSON_DATABIND, Depends.JACKSON_VER);
+                    Depends.JACKSON_DATABIND, Depends.JACKSON_DATABIND_VER);
 
             // Setup redis related stuff
             new RChitchat(this);

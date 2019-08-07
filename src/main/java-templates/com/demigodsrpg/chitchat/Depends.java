@@ -16,4 +16,5 @@ public class Depends {
     public static final String SLF4J_API_VER = "${slf4j.version}";
     public static final String KYRO_VER = "${kryo.version}";
     public static final String JACKSON_VER = "${jackson.version}";
+    public static final String JACKSON_DATABIND_VER = "${jackson.databind.version}";
 }
