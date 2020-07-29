@@ -1,6 +1,6 @@
 name: ${project.name}
 main: com.demigodsrpg.chitchat.Chitchat
-api-version: 1.14
+api-version: 1.16
 version: ${project.version}
 description: The simplest plugin for chitchat.
 authors: [HmmmQuestionMark]
