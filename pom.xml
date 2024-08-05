@@ -12,7 +12,7 @@
     <properties> <!-- It is important to keep up to date manually. -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spigot.version>1.16.1-R0.1-SNAPSHOT</spigot.version>
-        <redisson.version>2.1.2</redisson.version>
+        <redisson.version>3.22.0</redisson.version>
         <slf4j.version>1.7.12</slf4j.version>
         <kryo.version>3.0.0</kryo.version>
         <jackson.version>2.9.9</jackson.version>
