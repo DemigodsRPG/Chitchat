@@ -24,7 +24,7 @@
  */
 package com.demigodsrpg.chitchat.tag;
 
-import net.md_5.bungee.api.chat.TextComponent;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
 /**
@@ -44,20 +44,8 @@ public abstract class PlayerTag {
      * @param tagSource The player.
      * @return The tag result.
      */
-    public TextComponent getComponentFor(Player tagSource) {
-        return new TextComponent(TextComponent.fromLegacyText(getFor(tagSource)));
-    }
-
-    /**
-     * Get the tag result for a player.
-     *
-     * @param tagSource The player.
-     * @return The tag result.
-     * @deprecated This method uses legacy
-     */
-    @Deprecated
-    public String getFor(Player tagSource) {
-        throw new UnsupportedOperationException("This method is not supported.");
+    public Component getComponentFor(Player tagSource) {
+        return tagSource.displayName();
     }
 
     /**

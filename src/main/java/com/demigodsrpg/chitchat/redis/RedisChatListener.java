@@ -1,11 +1,11 @@
 package com.demigodsrpg.chitchat.redis;
 
 import com.demigodsrpg.chitchat.RChitchat;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.redisson.core.MessageListener;
+import org.redisson.api.listener.MessageListener;
 
 public class RedisChatListener implements MessageListener<String> {
     private final RChitchat R_INST;
@@ -15,11 +15,11 @@ public class RedisChatListener implements MessageListener<String> {
     }
 
     @Override
-    public void onMessage(String ignored, String message) {
+    public void onMessage(CharSequence ignored, String message) {
         if (message != null && !message.startsWith(R_INST.getServerId() + "$")) {
-            TextComponent component = new TextComponent(ComponentSerializer.parse(message));
+            Component component = JSONComponentSerializer.json().deserialize(message);
             for (Player player : Bukkit.getOnlinePlayers()) {
-                player.spigot().sendMessage(component);
+                player.sendMessage(component);
             }
         }
     }

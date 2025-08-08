@@ -4,7 +4,9 @@ import com.demigodsrpg.chitchat.Chitchat;
 import com.demigodsrpg.chitchat.PrivateMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.redisson.core.MessageListener;
+import org.redisson.api.listener.MessageListener;
+
+import java.util.Objects;
 
 public class RedisMsgListener implements MessageListener<String> {
     private final Chitchat INST;
@@ -14,12 +16,12 @@ public class RedisMsgListener implements MessageListener<String> {
     }
 
     @Override
-    public void onMessage(String ignored, String json) {
+    public void onMessage(CharSequence ignored, String json) {
         PrivateMessage message = new PrivateMessage(INST, json);
         INST.getLogger().info(message.getLogMessage());
         OfflinePlayer offline = Bukkit.getOfflinePlayer(message.getTarget());
         if (offline.isOnline()) {
-            offline.getPlayer().sendMessage(message.getFormattedMessage(false));
+            Objects.requireNonNull(offline.getPlayer()).sendMessage(message.getFormattedMessage(false));
         }
     }
 }

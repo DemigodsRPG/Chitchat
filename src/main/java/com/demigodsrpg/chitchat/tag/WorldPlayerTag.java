@@ -25,7 +25,8 @@
 package com.demigodsrpg.chitchat.tag;
 
 import com.demigodsrpg.chitchat.Chitchat;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -37,7 +38,7 @@ import java.util.Map;
 public class WorldPlayerTag extends PlayerTag {
     // -- NAME CACHE -- //
 
-    private final Map<String, String> TEXT_CACHE = new HashMap<String, String>();
+    private final Map<String, Component> TEXT_CACHE = new HashMap<>();
 
     // -- GETTERS -- //
 
@@ -47,7 +48,7 @@ public class WorldPlayerTag extends PlayerTag {
     }
 
     @Override
-    public String getFor(Player tagSource) {
+    public Component getComponentFor(Player tagSource) {
         // Get world name
         String worldName = tagSource.getWorld().getName();
 
@@ -57,8 +58,9 @@ public class WorldPlayerTag extends PlayerTag {
         }
 
         // Generate the tag text
-        String tagText = ChatColor.translateAlternateColorCodes('&', Chitchat.getInst().getConfig().getString("worlds."
-                + worldName + ".text", "[" + worldName.toUpperCase() + "]"));
+        Component tagText = LegacyComponentSerializer.legacyAmpersand().
+                deserialize(Chitchat.getInst().getConfig().getString("worlds."
+                        + worldName + ".text", "[" + worldName.toUpperCase() + "]"));
         TEXT_CACHE.put(worldName, tagText);
         return tagText;
     }

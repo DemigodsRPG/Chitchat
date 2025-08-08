@@ -32,7 +32,7 @@ import java.util.List;
 public class LibraryHandler {
     // -- IMPORTANT FIELDS -- //
 
-    public static final String MAVEN_CENTRAL = "http://central.maven.org/maven2/";
+    public static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven2/";
     private static final int BYTE_SIZE = 1024;
 
     private final List<String> FILE_NAMES;
@@ -74,7 +74,7 @@ public class LibraryHandler {
         // Check if all libraries exist
 
         File[] filesArray = LIB_DIRECTORY.listFiles();
-        List<File> files = Arrays.asList(filesArray != null ? filesArray : new File[]{});
+        File[] files = filesArray != null ? filesArray : new File[]{};
 
         for (File file : files) {
             if (file.getName().endsWith(".jar")) {
@@ -119,7 +119,7 @@ public class LibraryHandler {
         FileOutputStream fout = null;
 
         try {
-            // Setup the streams
+            // Set up the streams
             in = new BufferedInputStream(libraryUrl.openStream());
             fout = new FileOutputStream(libraryFile);
 
@@ -139,6 +139,7 @@ public class LibraryHandler {
         } catch (final Exception oops) {
             // Couldn't download the file
             PLUGIN.getLogger().severe("Download could not complete");
+            oops.printStackTrace();
         } finally {
             // Close the streams
             try {

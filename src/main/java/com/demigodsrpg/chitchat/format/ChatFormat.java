@@ -27,10 +27,14 @@ package com.demigodsrpg.chitchat.format;
 import com.demigodsrpg.chitchat.tag.ChatScope;
 import com.demigodsrpg.chitchat.tag.PlayerTag;
 import com.google.common.collect.ImmutableList;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentBuilder;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
@@ -106,21 +110,23 @@ public class ChatFormat {
     }
 
     /**
-     * Get the representation of all of the player tags.
+     * Get the representation of all the player tags.
      *
      * @param player The player for whom the tags will be applied.
      * @param scope The scope for the tag to be presented in.
      * @return The tag results.
      */
-    public TextComponent getTags(TextComponent parent, Player player, ChatScope scope) {
-        playerTags.stream().filter(tag -> tag.getScope().equals(scope) || ChatScope.ALL.equals(tag.getScope())).
-                forEach(tag -> {
-                    TextComponent component = tag.getComponentFor(player);
-                    if (component != null) {
-                        parent.addExtra(component.duplicate());
+    public Component getTags(Player player, ChatScope scope) {
+        ComponentBuilder<TextComponent, TextComponent.Builder> builder = Component.text();
+        for (PlayerTag tag : playerTags) {
+            if (tag.getScope().equals(scope) || ChatScope.ALL.equals(tag.getScope())) {
+                Component component = tag.getComponentFor(player);
+                if (component != null) {
+                    builder.append(component);
+                }
             }
-                });
-        return parent;
+        }
+        return builder.build();
     }
 
     /**
@@ -131,21 +137,19 @@ public class ChatFormat {
      * @param message The message being sent.
      * @return The final formatted message.
      */
-    public BaseComponent getFormattedMessage(Player player, ChatScope scope, String message) {
-        TextComponent ret = new TextComponent("");
-        ret = getTags(ret, player, scope);
-        ret.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-        TextComponent next = new TextComponent(": ");
-        next.setColor(net.md_5.bungee.api.ChatColor.DARK_GRAY);
-        ret.addExtra(next);
-        String finalMessage = ChatColor.WHITE + message;
+    public Component getFormattedMessage(Player player, ChatScope scope, Component message) {
+        Component finalMessage;
         if (player.hasPermission("chitchat.color")) {
-            finalMessage = ChatColor.translateAlternateColorCodes('&', finalMessage);
+            finalMessage = LegacyComponentSerializer.legacyAmpersand().
+                    deserialize(PlainTextComponentSerializer.plainText().serialize(message));
+        } else {
+            finalMessage = message;
         }
-        for (BaseComponent component : TextComponent.fromLegacyText(finalMessage)) {
-            ret.addExtra(component);
-        }
-        return ret;
+        Bukkit.getLogger().severe(PlainTextComponentSerializer.plainText().serialize(getTags(player, scope)));
+        return getTags(player, scope).
+                append(Component.text(": ", NamedTextColor.GRAY)).
+                append(Component.text("", NamedTextColor.DARK_GRAY)).
+                append(finalMessage);
     }
 
     /**
@@ -156,8 +160,8 @@ public class ChatFormat {
      * @param message The message being sent.
      * @return The serialized message.
      */
-    public String getSerializedMessage(Player player, ChatScope scope, String message) {
-        return ComponentSerializer.toString(getFormattedMessage(player, scope, message));
+    public String getSerializedMessage(Player player, ChatScope scope, Component message) {
+        return JSONComponentSerializer.json().serialize(getFormattedMessage(player, scope, message));
     }
 
     /**

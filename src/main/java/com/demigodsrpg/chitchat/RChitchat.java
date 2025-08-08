@@ -3,17 +3,18 @@ package com.demigodsrpg.chitchat;
 import com.demigodsrpg.chitchat.redis.RedisChatListener;
 import com.demigodsrpg.chitchat.redis.RedisMsgListener;
 import org.bukkit.event.Listener;
-import org.redisson.Config;
 import org.redisson.Redisson;
-import org.redisson.core.RTopic;
+import org.redisson.api.RTopic;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 
 
 public class RChitchat implements Listener {
     // -- REDIS DATA -- //
     private static RChitchat INST;
-    private final Redisson REDIS;
-    static RTopic<String> REDIS_CHAT;
-    static RTopic<String> REDIS_MSG;
+    private final RedissonClient REDIS;
+    static RTopic REDIS_CHAT;
+    static RTopic REDIS_MSG;
 
     // -- OPTIONS -- //
 
@@ -48,14 +49,14 @@ public class RChitchat implements Listener {
         // Make sure everything connected, if not, disable the plugin
         try {
             // Check if redis connected
-            REDIS.getBucket("test").exists();
+            REDIS.getBucket("test").isExists();
             cc.getLogger().info("Redis connection was successful.");
 
             // Register the msg listener
-            REDIS_CHAT.addListener(new RedisChatListener(this));
+            REDIS_CHAT.addListener(String.class, new RedisChatListener(this));
 
             // Register the msg listener
-            REDIS_MSG.addListener(new RedisMsgListener(cc));
+            REDIS_MSG.addListener(String.class, new RedisMsgListener(cc));
         } catch (Exception ignored) {
             cc.getLogger().severe("Redis connection was unsuccessful!");
             cc.getLogger().severe("Disabling all Redis features.");

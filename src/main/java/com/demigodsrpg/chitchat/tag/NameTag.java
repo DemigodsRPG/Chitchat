@@ -1,7 +1,6 @@
 package com.demigodsrpg.chitchat.tag;
 
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
 public class NameTag extends PlayerTag {
@@ -16,11 +15,7 @@ public class NameTag extends PlayerTag {
     }
 
     @Override
-    public TextComponent getComponentFor(Player tagSource) {
-        TextComponent ret = new TextComponent("");
-        for (BaseComponent component : TextComponent.fromLegacyText(tagSource.getDisplayName())) {
-            ret.addExtra(component);
-        }
-        return ret;
+    public Component getComponentFor(Player tagSource) {
+        return tagSource.displayName();
     }
 }

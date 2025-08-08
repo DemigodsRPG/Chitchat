@@ -29,9 +29,14 @@ import com.demigodsrpg.chitchat.format.ChatFormat;
 import com.demigodsrpg.chitchat.tag.*;
 import com.demigodsrpg.chitchat.util.*;
 import com.google.common.collect.ImmutableList;
-import net.md_5.bungee.api.chat.*;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.ForwardingAudience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -49,7 +54,6 @@ public class Chitchat extends JavaPlugin {
     static Chitchat INST;
     ChatFormat FORMAT;
     JsonFileUtil JSON;
-    TitleUtil TITLE;
     LibraryHandler LIBRARIES;
 
     // -- IMPORTANT LISTS -- //
@@ -76,14 +80,6 @@ public class Chitchat extends JavaPlugin {
         // Handle local data saves
         JSON = new JsonFileUtil(getDataFolder(), true);
 
-        // Setup TitleUtil
-        try {
-            TITLE = new TitleUtil();
-        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException |
-                NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-
         // Handle config
         getConfig().options().copyDefaults(true);
         saveConfig();
@@ -96,21 +92,17 @@ public class Chitchat extends JavaPlugin {
 
         // Default tags
         if(getConfig().getBoolean("use_examples", true)) {
-            TextComponent admin = new TextComponent("[A]");
-            admin.setColor(net.md_5.bungee.api.ChatColor.DARK_RED);
-            admin.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Administrator").
-                    color(net.md_5.bungee.api.ChatColor.DARK_RED).create()));
-            TextComponent dev = new TextComponent("[D]");
-            dev.setColor(net.md_5.bungee.api.ChatColor.DARK_GRAY);
-            dev.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Developer").
-                    color(net.md_5.bungee.api.ChatColor.DARK_GRAY).create()));
+            Component admin = Component.text("[A]", NamedTextColor.DARK_RED).
+                    hoverEvent(HoverEvent.showText(Component.text("Administrator", NamedTextColor.DARK_RED)));
+            Component dev = Component.text("[D]", NamedTextColor.DARK_GRAY).
+                    hoverEvent(HoverEvent.showText(Component.text("Developer", NamedTextColor.DARK_GRAY)));
             FORMAT.add(new WorldPlayerTag())
                     .add(new DefaultPlayerTag("example-prefix", "chitchat.admin", admin, 3))
                     .add(new SpecificPlayerTag("hqm", "HmmmQuestionMark", dev, 3))
-                    .add(new SpecificPlayerTag("hqm2", "HmmmQM", dev, 3))
+                    .add(new SpecificPlayerTag("hqm2", "PseudoHQM", dev, 3))
                     .add(new SpecificPlayerTag("hqm3", "HQM", dev, 3))
                     .add(new NameTag());
-        }
+            }
 
         // Register events
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
@@ -130,7 +122,7 @@ public class Chitchat extends JavaPlugin {
         getCommand("ccreply").setExecutor(msgCommand);
 
         // Will we use redis?
-        USE_REDIS = getConfig().getBoolean("redis.use", true);
+        USE_REDIS = false; //getConfig().getBoolean("redis.use", false);
 
         // Redis stuff
         if (USE_REDIS) {
@@ -145,6 +137,8 @@ public class Chitchat extends JavaPlugin {
                     Depends.JACKSON_CORE, Depends.JACKSON_VER);
             LIBRARIES.addMavenLibrary(LibraryHandler.MAVEN_CENTRAL, Depends.COM_FASTERXML_JACKSON_CORE,
                     Depends.JACKSON_DATABIND, Depends.JACKSON_DATABIND_VER);
+            LIBRARIES.addMavenLibrary(LibraryHandler.MAVEN_CENTRAL, Depends.IO_NETTY,
+                    Depends.NETTY, Depends.NETTY_VER);
 
             // Setup redis related stuff
             new RChitchat(this);
@@ -239,45 +233,16 @@ public class Chitchat extends JavaPlugin {
     }
 
     /**
-     * Send a title message to a player.
-     *
-     * @param player       The player receiving the message.
-     * @param fadeInTicks  The ticks the message takes to fade in.
-     * @param stayTicks    The ticks the message stays on screen (sans fades).
-     * @param fadeOutTicks The ticks the message takes to fade out.
-     * @param title        The title text.
-     * @param subtitle     The subtitle text.
-     */
-    public static void sendTitle(Player player, int fadeInTicks, int stayTicks, int fadeOutTicks, String title,
-                                 String subtitle) {
-        if (getInst().TITLE != null) {
-            getInst().TITLE.sendTitle(player, fadeInTicks, stayTicks, fadeOutTicks, title, subtitle);
-        }
-    }
-
-    /**
-     * Clear or reset the title data for a specified player.
-     *
-     * @param player The player being cleared/reset.
-     * @param reset  True if reset, false for clear.
-     */
-    public static void clearTitle(final Player player, boolean reset) {
-        if (getInst().TITLE != null) {
-            getInst().TITLE.clearTitle(player, reset);
-        }
-    }
-
-    /**
      * Send a message through the Chitchat plugin. Includes the redis chat channel.
      *
      * @param message The message to be sent.
      */
     @SuppressWarnings("unchecked")
-    public static void sendMessage(BaseComponent message) {
+    public static void sendMessage(Component message) {
         if (getInst().USE_REDIS) {
-            RChitchat.REDIS_CHAT.publish(RChitchat.getInst().getServerId() + "$" + message.toLegacyText());
+            RChitchat.REDIS_CHAT.publish(RChitchat.getInst().getServerId() + "$" + JSONComponentSerializer.json().serialize(message));
         }
-        sendMessage(message, (Collection<Player>) Bukkit.getServer().getOnlinePlayers());
+        sendMessage(message, (ForwardingAudience) Bukkit.getServer());
     }
 
     /**
@@ -286,9 +251,9 @@ public class Chitchat extends JavaPlugin {
      * @param message    The message to be sent.
      * @param recipients The recipients of this message.
      */
-    public static void sendMessage(BaseComponent message, Collection<Player> recipients) {
-        for (Player player : recipients) {
-            player.spigot().sendMessage(message);
+    public static void sendMessage(Component message, ForwardingAudience recipients) {
+        for (Audience player : recipients.audiences()) {
+            player.sendMessage(message);
         }
     }
 
@@ -300,7 +265,7 @@ public class Chitchat extends JavaPlugin {
      */
     @Deprecated
     public static void sendMessage(String message) {
-        sendMessage(new TextComponent(TextComponent.fromLegacyText(message)));
+        sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(message));
     }
 
     // -- OPTION GETTERS -- //

@@ -3,7 +3,8 @@ package com.demigodsrpg.chitchat.command;
 import com.demigodsrpg.chitchat.Chitchat;
 import com.demigodsrpg.chitchat.PrivateMessage;
 import com.google.common.base.Joiner;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,7 +18,7 @@ public class CCMsgCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (sender.hasPermission("chitchat.msg") && !INST.getMuteMap().keySet().contains(sender.getName())) {
+        if (sender.hasPermission("chitchat.msg") && !INST.getMuteMap().containsKey(sender.getName())) {
             String receiver;
             String message = Joiner.on(" ").join(args);
             if ("ccmsg".equals(command.getName()) && args.length > 1) {
@@ -28,16 +29,16 @@ public class CCMsgCommand implements CommandExecutor {
                 if (!"".equals(lastSent)) {
                     receiver = lastSent;
                 } else {
-                    sender.sendMessage(ChatColor.RED + "This is not a reply, please use /msg instead.");
+                    sender.sendMessage(Component.text("This is not a reply, please use /msg instead.", NamedTextColor.RED));
                     return true;
                 }
             } else {
-                sender.sendMessage(ChatColor.RED + "You've made a mistake with the syntax");
+                sender.sendMessage(Component.text("You've made a mistake with the syntax.", NamedTextColor.RED));
                 return false;
             }
 
             if (receiver.equals(sender.getName())) {
-                sender.sendMessage(ChatColor.RED + "Why are you sending messages to yourself?");
+                sender.sendMessage(Component.text("Why are you sending messages to yourself?", NamedTextColor.RED));
                 return true;
             }
 
@@ -49,7 +50,7 @@ public class CCMsgCommand implements CommandExecutor {
 
             return true;
         } else {
-            sender.sendMessage(ChatColor.RED + "You don't have permission to use that command.");
+            sender.sendMessage(Component.text("You don't have permission to use that command.", NamedTextColor.RED));
             return true;
         }
     }

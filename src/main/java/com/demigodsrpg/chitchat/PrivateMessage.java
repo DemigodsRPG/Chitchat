@@ -1,18 +1,20 @@
 package com.demigodsrpg.chitchat;
 
 import com.google.gson.GsonBuilder;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class PrivateMessage implements Serializable {
     // -- SERIAL VERSION UID -- //
 
-    public static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     // -- TRANSIENT DATA -- //
 
@@ -20,9 +22,9 @@ public class PrivateMessage implements Serializable {
 
     // -- META DATA -- //
 
-    private String target;
-    private String sender;
-    private String message;
+    private final String target;
+    private final String sender;
+    private final String message;
 
     // -- CONSTRUCTORS -- //
 
@@ -56,9 +58,11 @@ public class PrivateMessage implements Serializable {
         return message;
     }
 
-    public String getFormattedMessage(boolean out) {
-        return ChatColor.DARK_GRAY + "PM" + (out ? " to" : " from") + " <" + ChatColor.DARK_AQUA +
-                (out ? target : sender) + ChatColor.DARK_GRAY + ">: " + ChatColor.GRAY + message;
+    public Component getFormattedMessage(boolean out) {
+       return Component.text("PM" + (out ? " to" : " from") + " <", NamedTextColor.DARK_GRAY).
+                append(Component.text((out ? target : sender), NamedTextColor.DARK_AQUA)).
+                append(Component.text(">: ", NamedTextColor.DARK_GRAY)).
+                append(Component.text(message, NamedTextColor.GRAY));
     }
 
     public String getLogMessage() {
@@ -88,13 +92,13 @@ public class PrivateMessage implements Serializable {
             RChitchat.REDIS_MSG.publishAsync(toJson());
         } else if (sender.isOnline()) {
             // Something went wrong
-            sender.getPlayer().sendMessage(ChatColor.RED + "There was an error sending a private message.");
+            Objects.requireNonNull(sender.getPlayer()).sendMessage(NamedTextColor.RED + "There was an error sending a private message.");
             return;
         }
 
         // Send the 'sent' message
         if (sender.isOnline()) {
-            sender.getPlayer().sendMessage(getFormattedMessage(true));
+            Objects.requireNonNull(sender.getPlayer()).sendMessage(getFormattedMessage(true));
         }
 
         // Add to the reply map

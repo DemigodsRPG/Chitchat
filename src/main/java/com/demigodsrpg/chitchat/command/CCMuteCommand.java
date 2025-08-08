@@ -2,8 +2,9 @@ package com.demigodsrpg.chitchat.command;
 
 import com.demigodsrpg.chitchat.Chitchat;
 import com.demigodsrpg.chitchat.util.JsonFileUtil;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -43,15 +44,15 @@ public class CCMuteCommand implements TabExecutor {
                                 if (INST.savingMutes()) {
                                     JSON.saveToFile("mutes", INST.getMuteMap());
                                 }
-                                sender.sendMessage(ChatColor.YELLOW + "Muted " + args[0]);
+                                sender.sendMessage(Component.text("Muted " + args[0], NamedTextColor.YELLOW));
                             } catch (IllegalArgumentException oops) {
-                                sender.sendMessage(ChatColor.RED + args[2].toUpperCase() +
-                                        " is an unsupported unit of time, try again.");
+                                sender.sendMessage(Component.text(args[2].toUpperCase() +
+                                        " is an unsupported unit of time, try again.", NamedTextColor.RED));
                             } catch (Exception oops) {
-                                sender.sendMessage(ChatColor.RED + args[0] + " does not exist, try again.");
+                                sender.sendMessage(Component.text(args[0] + " does not exist, try again.", NamedTextColor.RED));
                             }
                         } else {
-                            sender.sendMessage(ChatColor.RED + "That player is already muted.");
+                            sender.sendMessage(Component.text("That player is already muted.", NamedTextColor.RED));
                         }
                     });
                 } else {
@@ -60,12 +61,12 @@ public class CCMuteCommand implements TabExecutor {
                         if (INST.getMuteMap().containsKey(mutedId)) {
                             try {
                                 INST.getMuteMap().remove(mutedId);
-                                sender.sendMessage(ChatColor.YELLOW + "Unmuted " + args[0]);
+                                sender.sendMessage(Component.text("Unmuted " + args[0], NamedTextColor.YELLOW));
                             } catch (Exception oops) {
-                                sender.sendMessage(ChatColor.RED + args[0] + " does not exist, try again.");
+                                sender.sendMessage(Component.text(args[0] + " does not exist, try again.", NamedTextColor.RED));
                             }
                         } else {
-                            sender.sendMessage(ChatColor.RED + "That player isn't currently muted.");
+                            sender.sendMessage(Component.text("That player isn't currently muted.", NamedTextColor.RED));
                         }
                     });
                 }
@@ -73,7 +74,7 @@ public class CCMuteCommand implements TabExecutor {
                 return false;
             }
         } else {
-            sender.sendMessage(ChatColor.RED + "You don't have permission to use that command.");
+            sender.sendMessage(Component.text("You don't have permission to use that command.", NamedTextColor.RED));
         }
         return true;
     }
@@ -90,8 +91,9 @@ public class CCMuteCommand implements TabExecutor {
                             collect(Collectors.toList()));
                 } else {
                     guess.addAll(Bukkit.getOnlinePlayers().stream().
-                            filter(online -> online.getName().toLowerCase().startsWith(args[0].toLowerCase())).
-                            map(Player::getName).collect(Collectors.toList()));
+                            map(Player::getName).
+                            filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase())).
+                            collect(Collectors.toList()));
                 }
             }
         }
@@ -101,7 +103,7 @@ public class CCMuteCommand implements TabExecutor {
     private long argsToMilliseconds(String[] args) throws IllegalArgumentException {
         try {
             // Establish the value
-            long val = Integer.valueOf(args[1]);
+            long val = Integer.parseInt(args[1]);
 
             // Only accept values in these bounds
             if (val > 0 || val <= 600) {

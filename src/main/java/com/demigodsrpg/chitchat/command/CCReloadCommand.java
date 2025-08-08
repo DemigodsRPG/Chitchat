@@ -1,8 +1,9 @@
 package com.demigodsrpg.chitchat.command;
 
 import com.demigodsrpg.chitchat.Chitchat;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -20,7 +21,7 @@ public class CCReloadCommand implements CommandExecutor {
             Bukkit.getServer().getPluginManager().disablePlugin(INST);
             Bukkit.getServer().getPluginManager().enablePlugin(INST);
         } else {
-            sender.sendMessage(ChatColor.RED + "You don't have permission to use that command.");
+            sender.sendMessage(Component.text("You don't have permission to use that command.", NamedTextColor.RED));
         }
         return true;
     }

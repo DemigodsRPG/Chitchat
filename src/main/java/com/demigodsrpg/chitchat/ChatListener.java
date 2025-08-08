@@ -1,13 +1,16 @@
 package com.demigodsrpg.chitchat;
 
 import com.demigodsrpg.chitchat.tag.ChatScope;
-import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.ChatColor;
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -22,21 +25,21 @@ public class ChatListener implements Listener {
     // -- BUKKIT CHAT LISTENER -- //
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
-    public void onChat(AsyncPlayerChatEvent chat) {
-        if (INST.getMuteMap().keySet().contains(chat.getPlayer().getUniqueId().toString())) {
+    public void onChat(AsyncChatEvent chat) {
+        if (INST.getMuteMap().containsKey(chat.getPlayer().getUniqueId().toString())) {
             chat.setCancelled(true);
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onFinalChat(AsyncPlayerChatEvent chat) {
-        Chitchat.sendMessage(INST.FORMAT.getFormattedMessage(chat.getPlayer(), ChatScope.LOCAL, chat.getMessage()),
-                chat.getRecipients());
+    public void onFinalChat(AsyncChatEvent chat) {
+        Chitchat.sendMessage(INST.FORMAT.getFormattedMessage(chat.getPlayer(), ChatScope.LOCAL, chat.message()),
+                Audience.audience(chat.viewers()));
         if (Chitchat.getInst().USE_REDIS && !INST.FORMAT.shouldCancelRedis(chat.getPlayer())) {
             RChitchat.REDIS_CHAT.publishAsync(RChitchat.getInst().getServerId() + "$" +
-                    INST.FORMAT.getSerializedMessage(chat.getPlayer(), ChatScope.CHANNEL, chat.getMessage()));
+                    INST.FORMAT.getSerializedMessage(chat.getPlayer(), ChatScope.CHANNEL, chat.message()));
         }
-        chat.getRecipients().clear();
+        chat.viewers().clear();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -45,23 +48,22 @@ public class ChatListener implements Listener {
         String[] commandMsg = command.getMessage().split("\\s+");
 
         // Muted commands
-        if (INST.getMuteMap().keySet().contains(player.getUniqueId().toString())) {
+        if (INST.getMuteMap().containsKey(player.getUniqueId().toString())) {
             if (Chitchat.getInst().MUTED_COMMANDS.contains(commandMsg[0].toLowerCase().substring(1))) {
                 command.setCancelled(true);
-                player.sendMessage(ChatColor.RED + "I'm sorry " + player.getName() + ", I'm afraid I can't do that.");
+                player.sendMessage(Component.text("I'm sorry " + player.getName() + ", I'm afraid I can't do that.", NamedTextColor.RED));
             }
         }
 
         // /me <message>
         else if (Chitchat.getInst().OVERRIDE_ME && commandMsg.length > 1 && commandMsg[0].equals("/me")) {
             command.setCancelled(true);
-            if (Chitchat.getInst().MUTED_COMMANDS.contains("me") && INST.getMuteMap().keySet().contains(player.
+            if (Chitchat.getInst().MUTED_COMMANDS.contains("me") && INST.getMuteMap().containsKey(player.
                     getUniqueId().toString())) {
-                player.sendMessage(ChatColor.RED + "I'm sorry " + player.getName() + ", I'm afraid I can't do that.");
+                player.sendMessage(Component.text("I'm sorry " + player.getName() + ", I'm afraid I can't do that.", NamedTextColor.RED));
             } else {
-                String message = command.getMessage().substring(1);
-                message = ChatColor.ITALIC + ChatColor.stripColor(player.getDisplayName() + " " + message.substring(3));
-                Chitchat.sendMessage(new TextComponent(message));
+                Component message = Component.text(PlainTextComponentSerializer.plainText().serialize(player.displayName()) + " " + command.getMessage().substring(4)).decorate(TextDecoration.ITALIC);
+                Chitchat.sendMessage(message);
             }
         }
     }
