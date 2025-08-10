@@ -1,29 +1,25 @@
 name: ${project.name}
 main: com.demigodsrpg.chitchat.Chitchat
-api-version: 1.16
+api-version: 1.21.8
 version: ${project.version}
 description: The simplest plugin for chitchat.
-authors: [HmmmQuestionMark]
+authors: [HQM]
 commands:
-  ccreload:
-    usage: /ccreload
-  ccmutelist:
-    usage: /ccmutelist
-    aliases: [mutelist, ccml]
-  ccmute:
-    usage: /ccmute <player> [time] [unit]
-    aliases: [mute, ccm]
-  ccunmute:
-    usage: /ccunmute <player>
-    aliases: [unmute, ccum]
-  ccmsg:
-    usage: /ccmsg <player> <message>
-    aliases: [msg, pm, whisper, tell]
-  ccreply:
-    usage: /ccreply <message>
-    aliases: [ccr, rep, r]
+  mutelist:
+    usage: /mutelist
+    aliases: [mutel]
+  mute:
+    usage: /mute <player> [time] [unit]
+  unmute:
+    usage: /unmute <player>
+  message:
+    usage: /message <player> <message>
+    aliases: [dm, pm, whisper, tell]
+  reply:
+    usage: /reply <message>
+    aliases: [r, rep]
 permisions:
-  chitchat.reload:
+  chitchat.delete:
     default: op
   chitchat.mute:
     default: op

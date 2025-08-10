@@ -22,26 +22,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.demigodsrpg.chitchat.tag;
+package com.demigodsrpg.chitchat.example;
 
+import com.demigodsrpg.chitchat.ChatTag;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
 /**
- * The default player tag based on permission nodes.
+ * A player tag that applies to a specific player name.
  */
-public class DefaultPlayerTag extends PlayerTag {
+public class SpecificChatTag extends ChatTag {
     // -- IMPORTANT DATA -- //
+
     private final String name;
-    private final String permissionNode;
+    private final String playerName;
     private final Component tagText;
     private final int priority;
 
     // -- CONSTRUCTOR -- //
 
-    public DefaultPlayerTag(String name, String permissionNode, Component tagText, int priority) {
+    public SpecificChatTag(String name, String playerName, Component tagText, int priority) {
         this.name = name;
-        this.permissionNode = permissionNode;
+        this.playerName = playerName;
         this.tagText = tagText;
         this.priority = priority;
     }
@@ -55,7 +57,7 @@ public class DefaultPlayerTag extends PlayerTag {
 
     @Override
     public Component getComponentFor(Player tagSource) {
-        if(tagSource.hasPermission(permissionNode)) {
+        if(tagSource.getName().equals(playerName)) {
             return tagText;
         }
         return null;

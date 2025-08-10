@@ -22,51 +22,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.demigodsrpg.chitchat.tag;
+package com.demigodsrpg.chitchat;
 
-import com.demigodsrpg.chitchat.Chitchat;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * A default tag based on a player's current world.
+ * An interface representing a player tag.
  */
-public class WorldPlayerTag extends PlayerTag {
-    // -- NAME CACHE -- //
+public abstract class ChatTag {
+    /**
+     * Get the name of this player tag.
+     *
+     * @return The name.
+     */
+    public abstract String getName();
 
-    private final Map<String, Component> TEXT_CACHE = new HashMap<>();
-
-    // -- GETTERS -- //
-
-    @Override
-    public String getName() {
-        return "world";
-    }
-
-    @Override
+    /**
+     * Get the tag result for a player.
+     *
+     * @param tagSource The player.
+     * @return The tag result.
+     */
     public Component getComponentFor(Player tagSource) {
-        // Get world name
-        String worldName = tagSource.getWorld().getName();
-
-        // Check the cache
-        if(TEXT_CACHE.containsKey(worldName)) {
-            return TEXT_CACHE.get(worldName);
-        }
-
-        // Generate the tag text
-        Component tagText = LegacyComponentSerializer.legacyAmpersand().
-                deserialize(Chitchat.getInst().getConfig().getString("worlds."
-                        + worldName + ".text", "[" + worldName.toUpperCase() + "]"));
-        TEXT_CACHE.put(worldName, tagText);
-        return tagText;
+        return tagSource.displayName();
     }
 
-    @Override
-    public int getPriority() {
-        return 0;
-    }
+    /**
+     * Get the priority (0 being leftmost, all larger being to the right).
+     *
+     * @return The priority.
+     */
+    public abstract int getPriority();
 }

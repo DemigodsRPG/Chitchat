@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class PrivateMessage implements Serializable {
+public class DirectMessage implements Serializable {
     // -- SERIAL VERSION UID -- //
 
     private static final long serialVersionUID = 1L;
@@ -29,7 +29,7 @@ public class PrivateMessage implements Serializable {
     // -- CONSTRUCTORS -- //
 
     @SuppressWarnings("unchecked")
-    public PrivateMessage(Chitchat inst, String json) {
+    public DirectMessage(Chitchat inst, String json) {
         INST = inst;
         Map<String, Object> map = new GsonBuilder().create().fromJson(json, Map.class);
         target = map.get("target").toString();
@@ -37,7 +37,7 @@ public class PrivateMessage implements Serializable {
         message = map.get("message").toString();
     }
 
-    public PrivateMessage(Chitchat inst, String target, String sender, String message) {
+    public DirectMessage(Chitchat inst, String target, String sender, String message) {
         INST = inst;
         this.target = target;
         this.sender = sender;
@@ -59,14 +59,14 @@ public class PrivateMessage implements Serializable {
     }
 
     public Component getFormattedMessage(boolean out) {
-       return Component.text("PM" + (out ? " to" : " from") + " <", NamedTextColor.DARK_GRAY).
+       return Component.text("DM" + (out ? " to" : " from") + " <", NamedTextColor.DARK_GRAY).
                 append(Component.text((out ? target : sender), NamedTextColor.DARK_AQUA)).
                 append(Component.text(">: ", NamedTextColor.DARK_GRAY)).
                 append(Component.text(message, NamedTextColor.GRAY));
     }
 
     public String getLogMessage() {
-        return "PM <" + sender + " to " + target + ">: " + message;
+        return "DM <" + sender + " to " + target + ">: " + message;
     }
 
     public String toJson() {
@@ -87,9 +87,6 @@ public class PrivateMessage implements Serializable {
         if (Bukkit.getPlayer(target) != null) {
             Bukkit.getPlayer(target).sendMessage(getFormattedMessage(false));
             Chitchat.getInst().getLogger().info(getLogMessage());
-        } else if (Chitchat.getInst().USE_REDIS) {
-            // Nope, send through redis
-            RChitchat.REDIS_MSG.publishAsync(toJson());
         } else if (sender.isOnline()) {
             // Something went wrong
             Objects.requireNonNull(sender.getPlayer()).sendMessage(NamedTextColor.RED + "There was an error sending a private message.");

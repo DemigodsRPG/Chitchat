@@ -22,55 +22,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.demigodsrpg.chitchat.tag;
+package com.demigodsrpg.chitchat;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
 /**
- * An interface representing a player tag.
+ * The default player tag based on permission nodes.
  */
-public abstract class PlayerTag {
-    /**
-     * Get the name of this player tag.
-     *
-     * @return The name.
-     */
-    public abstract String getName();
+public class PlayerTag extends ChatTag {
+    // -- IMPORTANT DATA -- //
+    private final String name;
+    private final String permissionNode;
+    private final Component tagText;
+    private final int priority;
 
-    /**
-     * Get the tag result for a player.
-     *
-     * @param tagSource The player.
-     * @return The tag result.
-     */
+    // -- CONSTRUCTOR -- //
+
+    public PlayerTag(String name, String permissionNode, Component tagText, int priority) {
+        this.name = name;
+        this.permissionNode = permissionNode;
+        this.tagText = tagText;
+        this.priority = priority;
+    }
+
+    // -- GETTERS -- //
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    public Component getTagText() {
+        return tagText;
+    }
+
+    @Override
     public Component getComponentFor(Player tagSource) {
-        return tagSource.displayName();
+        if(tagSource.hasPermission(permissionNode)) {
+            return tagText;
+        }
+        return null;
     }
 
-    /**
-     * Get the tag's chat scope.
-     *
-     * @return The scope for this tag to be presented in.
-     */
-    public ChatScope getScope() {
-        return ChatScope.ALL;
+    @Override
+    public int getPriority() {
+        return priority;
     }
-
-    /**
-     * Should this player currently be not be sending chat over redis?
-     *
-     * @param tagSource The player.
-     * @return The message shouldn't be sent to bungee.
-     */
-    public boolean cancelRedis(Player tagSource) {
-        return false;
-    }
-
-    /**
-     * Get the priority (0 being leftmost, all larger being to the right).
-     *
-     * @return The priority.
-     */
-    public abstract int getPriority();
 }

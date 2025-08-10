@@ -17,11 +17,11 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class CCMuteCommand implements TabExecutor {
+public class MuteCommand implements TabExecutor {
     private final Chitchat INST;
     private final JsonFileUtil JSON;
 
-    public CCMuteCommand(Chitchat inst, JsonFileUtil util) {
+    public MuteCommand(Chitchat inst, JsonFileUtil util) {
         INST = inst;
         JSON = util;
     }

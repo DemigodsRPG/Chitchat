@@ -1,9 +1,9 @@
-package com.demigodsrpg.chitchat.tag;
+package com.demigodsrpg.chitchat;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
-public class NameTag extends PlayerTag {
+public class NameTag extends ChatTag {
     @Override
     public String getName() {
         return "name";

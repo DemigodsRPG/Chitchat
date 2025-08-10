@@ -25,17 +25,14 @@
 package com.demigodsrpg.chitchat;
 
 import com.demigodsrpg.chitchat.command.*;
+import com.demigodsrpg.chitchat.example.SpecificChatTag;
+import com.demigodsrpg.chitchat.example.WorldChatTag;
 import com.demigodsrpg.chitchat.format.ChatFormat;
-import com.demigodsrpg.chitchat.tag.*;
 import com.demigodsrpg.chitchat.util.*;
 import com.google.common.collect.ImmutableList;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.ForwardingAudience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -54,7 +51,6 @@ public class Chitchat extends JavaPlugin {
     static Chitchat INST;
     ChatFormat FORMAT;
     JsonFileUtil JSON;
-    LibraryHandler LIBRARIES;
 
     // -- IMPORTANT LISTS -- //
     ConcurrentMap<String, Double> MUTE_MAP;
@@ -63,7 +59,6 @@ public class Chitchat extends JavaPlugin {
     // -- OPTIONS -- //
 
     boolean OVERRIDE_ME;
-    boolean USE_REDIS;
     boolean SAVE_MUTES;
     List<String> MUTED_COMMANDS;
 
@@ -75,7 +70,6 @@ public class Chitchat extends JavaPlugin {
         // Define static objects
         INST = this;
         FORMAT = new ChatFormat();
-        LIBRARIES = new LibraryHandler(this);
 
         // Handle local data saves
         JSON = new JsonFileUtil(getDataFolder(), true);
@@ -96,61 +90,34 @@ public class Chitchat extends JavaPlugin {
                     hoverEvent(HoverEvent.showText(Component.text("Administrator", NamedTextColor.DARK_RED)));
             Component dev = Component.text("[D]", NamedTextColor.DARK_GRAY).
                     hoverEvent(HoverEvent.showText(Component.text("Developer", NamedTextColor.DARK_GRAY)));
-            FORMAT.add(new WorldPlayerTag())
-                    .add(new DefaultPlayerTag("example-prefix", "chitchat.admin", admin, 3))
-                    .add(new SpecificPlayerTag("hqm", "HmmmQuestionMark", dev, 3))
-                    .add(new SpecificPlayerTag("hqm2", "PseudoHQM", dev, 3))
-                    .add(new SpecificPlayerTag("hqm3", "HQM", dev, 3))
+            FORMAT.add(new WorldChatTag())
+                    .add(new PlayerTag("example-prefix", "chitchat.admin", admin, 3))
+                    .add(new SpecificChatTag("hqm", "HmmmQuestionMark", dev, 3))
+                    .add(new SpecificChatTag("hqm2", "PseudoHQM", dev, 3))
+                    .add(new SpecificChatTag("hqm3", "HQM", dev, 3))
                     .add(new NameTag());
-            }
+        }
 
         // Register events
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
 
         // Register commands
-        CCReloadCommand reloadCommand = new CCReloadCommand(this);
-        CCMuteListCommand muteListCommand = new CCMuteListCommand(this);
-        CCMuteCommand muteCommand = new CCMuteCommand(this, JSON);
-        CCMsgCommand msgCommand = new CCMsgCommand(this);
-        getCommand("ccreload").setExecutor(reloadCommand);
-        getCommand("ccmutelist").setExecutor(muteListCommand);
-        getCommand("ccmute").setExecutor(muteCommand);
-        getCommand("ccmute").setTabCompleter(muteCommand);
-        getCommand("ccunmute").setExecutor(muteCommand);
-        getCommand("ccunmute").setTabCompleter(muteCommand);
-        getCommand("ccmsg").setExecutor(msgCommand);
-        getCommand("ccreply").setExecutor(msgCommand);
+        MuteListCommand muteListCommand = new MuteListCommand(this);
+        MuteCommand muteCommand = new MuteCommand(this, JSON);
+        MessageCommand msgCommand = new MessageCommand(this);
+        getCommand("mutelist").setExecutor(muteListCommand);
+        getCommand("mute").setExecutor(muteCommand);
+        getCommand("mute").setTabCompleter(muteCommand);
+        getCommand("unmute").setExecutor(muteCommand);
+        getCommand("unmute").setTabCompleter(muteCommand);
+        getCommand("message").setExecutor(msgCommand);
+        getCommand("reply").setExecutor(msgCommand);
 
-        // Will we use redis?
-        USE_REDIS = false; //getConfig().getBoolean("redis.use", false);
+        // Setup mute list
+        MUTE_MAP = new ConcurrentHashMap<>();
 
-        // Redis stuff
-        if (USE_REDIS) {
-            // Add the required libraries
-            LIBRARIES.addMavenLibrary(LibraryHandler.MAVEN_CENTRAL, Depends.ORG_REDISSON,
-                    Depends.REDISSON, Depends.REDISSON_VER);
-            LIBRARIES.addMavenLibrary(LibraryHandler.MAVEN_CENTRAL, Depends.ORG_SLF4J,
-                    Depends.SLF4J_API, Depends.SLF4J_API_VER);
-            LIBRARIES.addMavenLibrary(LibraryHandler.MAVEN_CENTRAL, Depends.COM_ESOTERICSOFTWARE,
-                    Depends.KYRO, Depends.KYRO_VER);
-            LIBRARIES.addMavenLibrary(LibraryHandler.MAVEN_CENTRAL, Depends.COM_FASTERXML_JACKSON_CORE,
-                    Depends.JACKSON_CORE, Depends.JACKSON_VER);
-            LIBRARIES.addMavenLibrary(LibraryHandler.MAVEN_CENTRAL, Depends.COM_FASTERXML_JACKSON_CORE,
-                    Depends.JACKSON_DATABIND, Depends.JACKSON_DATABIND_VER);
-            LIBRARIES.addMavenLibrary(LibraryHandler.MAVEN_CENTRAL, Depends.IO_NETTY,
-                    Depends.NETTY, Depends.NETTY_VER);
-
-            // Setup redis related stuff
-            new RChitchat(this);
-        }
-
-        if (!USE_REDIS) {
-            // Setup mute list
-            MUTE_MAP = new ConcurrentHashMap<>();
-
-            // Setup private message map
-            REPLY_MAP = new ConcurrentHashMap<>();
-        }
+        // Setup private message map
+        REPLY_MAP = new ConcurrentHashMap<>();
 
         // Handle mute settings
         SAVE_MUTES = getConfig().getBoolean("save_mutes", false);
@@ -163,11 +130,10 @@ public class Chitchat extends JavaPlugin {
         }
 
         // Clean up old mutes (only one server should do this to avoid unnecessary threads
-        if (!USE_REDIS || getConfig().getBoolean("redis.clean_old_mutes", false)) {
-            Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, () -> MUTE_MAP.entrySet().stream().
-                    filter(entry -> entry.getValue() < System.currentTimeMillis()).
-                    forEach((Map.Entry<String, Double> entry) -> MUTE_MAP.remove(entry.getKey())), 30, 30);
-        }
+        Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, () -> MUTE_MAP.entrySet().stream().
+                filter(entry -> entry.getValue() < System.currentTimeMillis()).
+                forEach((Map.Entry<String, Double> entry) -> MUTE_MAP.remove(entry.getKey())), 30, 30);
+
     }
 
     @Override
@@ -232,49 +198,9 @@ public class Chitchat extends JavaPlugin {
         return INST;
     }
 
-    /**
-     * Send a message through the Chitchat plugin. Includes the redis chat channel.
-     *
-     * @param message The message to be sent.
-     */
-    @SuppressWarnings("unchecked")
-    public static void sendMessage(Component message) {
-        if (getInst().USE_REDIS) {
-            RChitchat.REDIS_CHAT.publish(RChitchat.getInst().getServerId() + "$" + JSONComponentSerializer.json().serialize(message));
-        }
-        sendMessage(message, (ForwardingAudience) Bukkit.getServer());
-    }
-
-    /**
-     * Send a message through the Chitchat plugin, exclusive to a list of recipients.
-     *
-     * @param message    The message to be sent.
-     * @param recipients The recipients of this message.
-     */
-    public static void sendMessage(Component message, ForwardingAudience recipients) {
-        for (Audience player : recipients.audiences()) {
-            player.sendMessage(message);
-        }
-    }
-
-    /**
-     * Send a message through the Chitchat plugin. Includes the redis chat channel.
-     *
-     * @param message The message to be sent.
-     * @deprecated This method is depreciated in favor of the new BaseComponent based method.
-     */
-    @Deprecated
-    public static void sendMessage(String message) {
-        sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(message));
-    }
-
     // -- OPTION GETTERS -- //
 
-    public boolean usingRedis() {
-        return USE_REDIS;
-    }
-
     public boolean savingMutes() {
-        return !USE_REDIS && SAVE_MUTES;
+        return SAVE_MUTES;
     }
 }

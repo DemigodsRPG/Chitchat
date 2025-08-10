@@ -22,48 +22,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.demigodsrpg.chitchat.tag;
+package com.demigodsrpg.chitchat.example;
 
+import com.demigodsrpg.chitchat.Chitchat;
+import com.demigodsrpg.chitchat.ChatTag;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * A player tag that applies to a specific player name.
+ * A default tag based on a player's current world.
  */
-public class SpecificPlayerTag extends PlayerTag {
-    // -- IMPORTANT DATA -- //
+public class WorldChatTag extends ChatTag {
+    // -- NAME CACHE -- //
 
-    private final String name;
-    private final String playerName;
-    private final Component tagText;
-    private final int priority;
-
-    // -- CONSTRUCTOR -- //
-
-    public SpecificPlayerTag(String name, String playerName, Component tagText, int priority) {
-        this.name = name;
-        this.playerName = playerName;
-        this.tagText = tagText;
-        this.priority = priority;
-    }
+    private final Map<String, Component> TEXT_CACHE = new HashMap<>();
 
     // -- GETTERS -- //
 
     @Override
     public String getName() {
-        return name;
+        return "world";
     }
 
     @Override
     public Component getComponentFor(Player tagSource) {
-        if(tagSource.getName().equals(playerName)) {
-            return tagText;
+        // Get world name
+        String worldName = tagSource.getWorld().getName();
+
+        // Check the cache
+        if(TEXT_CACHE.containsKey(worldName)) {
+            return TEXT_CACHE.get(worldName);
         }
-        return null;
+
+        // Generate the tag text
+        Component tagText = LegacyComponentSerializer.legacyAmpersand().
+                deserialize(Chitchat.getInst().getConfig().getString("worlds."
+                        + worldName + ".text", "[" + worldName.toUpperCase() + "]"));
+        TEXT_CACHE.put(worldName, tagText);
+        return tagText;
     }
 
     @Override
     public int getPriority() {
-        return priority;
+        return 0;
     }
 }

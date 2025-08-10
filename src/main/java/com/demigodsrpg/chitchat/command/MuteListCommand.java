@@ -13,11 +13,11 @@ import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
-public class CCMuteListCommand implements CommandExecutor {
+public class MuteListCommand implements CommandExecutor {
 
     private final Chitchat INST;
 
-    public CCMuteListCommand(Chitchat inst) {
+    public MuteListCommand(Chitchat inst) {
         INST = inst;
     }
 

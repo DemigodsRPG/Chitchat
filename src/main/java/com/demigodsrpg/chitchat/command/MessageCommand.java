@@ -1,7 +1,7 @@
 package com.demigodsrpg.chitchat.command;
 
 import com.demigodsrpg.chitchat.Chitchat;
-import com.demigodsrpg.chitchat.PrivateMessage;
+import com.demigodsrpg.chitchat.DirectMessage;
 import com.google.common.base.Joiner;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -9,10 +9,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-public class CCMsgCommand implements CommandExecutor {
+public class MessageCommand implements CommandExecutor {
     private final Chitchat INST;
 
-    public CCMsgCommand(Chitchat inst) {
+    public MessageCommand(Chitchat inst) {
         INST = inst;
     }
 
@@ -43,10 +43,10 @@ public class CCMsgCommand implements CommandExecutor {
             }
 
             // Create the private message
-            PrivateMessage privateMessage = new PrivateMessage(INST, receiver, sender.getName(), message);
+            DirectMessage directMessage = new DirectMessage(INST, receiver, sender.getName(), message);
 
             // Send the message
-            privateMessage.send();
+            directMessage.send();
 
             return true;
         } else {

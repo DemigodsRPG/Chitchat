@@ -1,12 +1,12 @@
 package com.demigodsrpg.chitchat;
 
-import com.demigodsrpg.chitchat.tag.ChatScope;
 import io.papermc.paper.event.player.AsyncChatEvent;
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,6 +17,11 @@ import org.bukkit.event.player.PlayerQuitEvent;
 public class ChatListener implements Listener {
 
     private final Chitchat INST;
+    private final Component deleteCrossBase = Component.textOfChildren(
+            Component.text("[", NamedTextColor.DARK_GRAY),
+            Component.text("X", NamedTextColor.DARK_RED, TextDecoration.BOLD),
+            Component.text("]", NamedTextColor.DARK_GRAY)
+    ).hoverEvent(Component.text("Click to delete your message!", NamedTextColor.RED));
 
     public ChatListener(Chitchat inst) {
         INST = inst;
@@ -33,13 +38,17 @@ public class ChatListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onFinalChat(AsyncChatEvent chat) {
-        Chitchat.sendMessage(INST.FORMAT.getFormattedMessage(chat.getPlayer(), ChatScope.LOCAL, chat.message()),
-                Audience.audience(chat.viewers()));
-        if (Chitchat.getInst().USE_REDIS && !INST.FORMAT.shouldCancelRedis(chat.getPlayer())) {
-            RChitchat.REDIS_CHAT.publishAsync(RChitchat.getInst().getServerId() + "$" +
-                    INST.FORMAT.getSerializedMessage(chat.getPlayer(), ChatScope.CHANNEL, chat.message()));
-        }
-        chat.viewers().clear();
+        chat.renderer((source, sourceDisplayName, message, viewer) -> {
+            Component newMessage = INST.FORMAT.getFormattedMessage(chat.getPlayer(), chat.originalMessage());
+
+            if(viewer == source || (viewer instanceof Player player && player.hasPermission("chitchat.delete"))) {
+                Component deleteCross = deleteCrossBase.
+                        clickEvent(ClickEvent.callback(audience -> Bukkit.getServer().deleteMessage(chat.signedMessage())));
+                newMessage = newMessage.appendSpace().append(deleteCross);
+            }
+
+            return newMessage;
+        });
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -63,7 +72,7 @@ public class ChatListener implements Listener {
                 player.sendMessage(Component.text("I'm sorry " + player.getName() + ", I'm afraid I can't do that.", NamedTextColor.RED));
             } else {
                 Component message = Component.text(PlainTextComponentSerializer.plainText().serialize(player.displayName()) + " " + command.getMessage().substring(4)).decorate(TextDecoration.ITALIC);
-                Chitchat.sendMessage(message);
+                Bukkit.getServer().sendMessage(message);
             }
         }
     }

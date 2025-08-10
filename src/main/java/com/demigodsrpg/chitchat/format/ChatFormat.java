@@ -24,8 +24,7 @@
  */
 package com.demigodsrpg.chitchat.format;
 
-import com.demigodsrpg.chitchat.tag.ChatScope;
-import com.demigodsrpg.chitchat.tag.PlayerTag;
+import com.demigodsrpg.chitchat.ChatTag;
 import com.google.common.collect.ImmutableList;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentBuilder;
@@ -48,30 +47,30 @@ import java.util.List;
 public class ChatFormat {
     // -- IMPORTANT DATA -- //
 
-    private final List<PlayerTag> playerTags = new LinkedList<>();
+    private final List<ChatTag> chatTags = new LinkedList<>();
 
     // -- MUTATORS -- //
 
     /**
      * Add a player tag to the chat format.
      *
-     * @param playerTag A player tag.
+     * @param chatTag A player tag.
      * @return This chat format.
      */
-    public ChatFormat add(PlayerTag playerTag) {
+    public ChatFormat add(ChatTag chatTag) {
         // Negative priorities don't exist
-        if(playerTag.getPriority() < 0) {
-            playerTags.add(0, playerTag);
+        if(chatTag.getPriority() < 0) {
+            chatTags.add(0, chatTag);
         }
 
         // Make sure the priority fits into the linked list
-        else if(playerTag.getPriority() + 1 > playerTags.size()) {
-            playerTags.add(playerTag);
+        else if(chatTag.getPriority() + 1 > chatTags.size()) {
+            chatTags.add(chatTag);
         }
 
         // Add to the correct spot
         else {
-            playerTags.add(playerTag.getPriority(), playerTag);
+            chatTags.add(chatTag.getPriority(), chatTag);
         }
         return this;
     }
@@ -79,22 +78,22 @@ public class ChatFormat {
     /**
      * Add a collection of player tags to the chat format.
      *
-     * @param playerTags A collection of player tags.
+     * @param chatTags A collection of player tags.
      * @return This chat format.
      */
-    public ChatFormat addAll(Collection<PlayerTag> playerTags) {
-        playerTags.forEach(this::add);
+    public ChatFormat addAll(Collection<ChatTag> chatTags) {
+        chatTags.forEach(this::add);
         return this;
     }
 
     /**
      * Add an array of player tags to the chat format.
      *
-     * @param playerTags An array of player tags.
+     * @param chatTags An array of player tags.
      * @return This chat format.
      */
-    public ChatFormat addAll(PlayerTag[] playerTags) {
-        Arrays.asList(playerTags).forEach(this::add);
+    public ChatFormat addAll(ChatTag[] chatTags) {
+        Arrays.asList(chatTags).forEach(this::add);
         return this;
     }
 
@@ -105,25 +104,22 @@ public class ChatFormat {
      *
      * @return An immutable copy of the player tags.
      */
-    public ImmutableList<PlayerTag> getPlayerTags() {
-        return ImmutableList.copyOf(playerTags);
+    public ImmutableList<ChatTag> getPlayerTags() {
+        return ImmutableList.copyOf(chatTags);
     }
 
     /**
      * Get the representation of all the player tags.
      *
      * @param player The player for whom the tags will be applied.
-     * @param scope The scope for the tag to be presented in.
      * @return The tag results.
      */
-    public Component getTags(Player player, ChatScope scope) {
+    public Component getTags(Player player) {
         ComponentBuilder<TextComponent, TextComponent.Builder> builder = Component.text();
-        for (PlayerTag tag : playerTags) {
-            if (tag.getScope().equals(scope) || ChatScope.ALL.equals(tag.getScope())) {
-                Component component = tag.getComponentFor(player);
-                if (component != null) {
-                    builder.append(component);
-                }
+        for (ChatTag tag : chatTags) {
+            Component component = tag.getComponentFor(player);
+            if (component != null) {
+                builder.append(component);
             }
         }
         return builder.build();
@@ -133,11 +129,10 @@ public class ChatFormat {
      * Get the final formatted message for this chat format.
      *
      * @param player The player chatting.
-     * @param scope The scope for the message to be presented in.
      * @param message The message being sent.
      * @return The final formatted message.
      */
-    public Component getFormattedMessage(Player player, ChatScope scope, Component message) {
+    public Component getFormattedMessage(Player player, Component message) {
         Component finalMessage;
         if (player.hasPermission("chitchat.color")) {
             finalMessage = LegacyComponentSerializer.legacyAmpersand().
@@ -145,8 +140,8 @@ public class ChatFormat {
         } else {
             finalMessage = message;
         }
-        Bukkit.getLogger().severe(PlainTextComponentSerializer.plainText().serialize(getTags(player, scope)));
-        return getTags(player, scope).
+        Bukkit.getLogger().severe(PlainTextComponentSerializer.plainText().serialize(getTags(player)));
+        return getTags(player).
                 append(Component.text(": ", NamedTextColor.GRAY)).
                 append(Component.text("", NamedTextColor.DARK_GRAY)).
                 append(finalMessage);
@@ -156,26 +151,10 @@ public class ChatFormat {
      * Get the final formatted message (serialized as json) for this chat format.
      *
      * @param player  The player chatting.
-     * @param scope   The scope for the message to be presented in.
      * @param message The message being sent.
      * @return The serialized message.
      */
-    public String getSerializedMessage(Player player, ChatScope scope, Component message) {
-        return JSONComponentSerializer.json().serialize(getFormattedMessage(player, scope, message));
-    }
-
-    /**
-     * Should this message not be sent over bungee?
-     *
-     * @param player The player.
-     * @return If the message should be sent over bungee.
-     */
-    public boolean shouldCancelRedis(Player player) {
-        for (PlayerTag tag : getPlayerTags()) {
-            if (tag.cancelRedis(player)) {
-                return true;
-            }
-        }
-        return false;
+    public String getSerializedMessage(Player player, Component message) {
+        return JSONComponentSerializer.json().serialize(getFormattedMessage(player, message));
     }
 }
