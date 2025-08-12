@@ -21,7 +21,7 @@ public class ChatListener implements Listener {
             Component.text("[", NamedTextColor.DARK_GRAY),
             Component.text("X", NamedTextColor.DARK_RED, TextDecoration.BOLD),
             Component.text("]", NamedTextColor.DARK_GRAY)
-    ).hoverEvent(Component.text("Click to delete your message!", NamedTextColor.RED));
+    ).hoverEvent(Component.text("Delete?", NamedTextColor.RED));
 
     public ChatListener(Chitchat inst) {
         INST = inst;
