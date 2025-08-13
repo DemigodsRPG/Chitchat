@@ -140,7 +140,6 @@ public class ChatFormat {
         } else {
             finalMessage = message;
         }
-        Bukkit.getLogger().severe(PlainTextComponentSerializer.plainText().serialize(getTags(player)));
         return getTags(player).
                 append(Component.text(": ", NamedTextColor.GRAY)).
                 append(Component.text("", NamedTextColor.DARK_GRAY)).

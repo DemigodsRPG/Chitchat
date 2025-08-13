@@ -17,7 +17,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 public class ChatListener implements Listener {
 
     private final Chitchat INST;
-    private final Component deleteCrossBase = Component.textOfChildren(
+    private final Component DELETE_CROSS_BASE = Component.textOfChildren(
             Component.text("[", NamedTextColor.DARK_GRAY),
             Component.text("X", NamedTextColor.DARK_RED, TextDecoration.BOLD),
             Component.text("]", NamedTextColor.DARK_GRAY)
@@ -38,16 +38,17 @@ public class ChatListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onFinalChat(AsyncChatEvent chat) {
+        final Component formattedMessage = INST.FORMAT.getFormattedMessage(chat.getPlayer(), chat.originalMessage());
         chat.renderer((source, sourceDisplayName, message, viewer) -> {
-            Component newMessage = INST.FORMAT.getFormattedMessage(chat.getPlayer(), chat.originalMessage());
+            Component finalMessage = formattedMessage;
 
             if(viewer == source || (viewer instanceof Player player && player.hasPermission("chitchat.delete"))) {
-                Component deleteCross = deleteCrossBase.
+                Component deleteCross = DELETE_CROSS_BASE.
                         clickEvent(ClickEvent.callback(audience -> Bukkit.getServer().deleteMessage(chat.signedMessage())));
-                newMessage = newMessage.appendSpace().append(deleteCross);
+                finalMessage =  finalMessage.appendSpace().append(deleteCross);
             }
 
-            return newMessage;
+            return finalMessage;
         });
     }
 
